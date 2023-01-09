@@ -24,6 +24,36 @@ type DBConnection struct {
 	DBName string
 }
 
+func GenerateWithoutSchema(destDir string, dbConn DBConnection, generatorTemplate ...template.Template) (err error) {
+	defer utils.ErrorCatch(&err)
+
+	connectionString := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", dbConn.User, dbConn.Password, dbConn.Host, dbConn.Port, dbConn.DBName)
+	if dbConn.Params != "" {
+		connectionString += "?" + dbConn.Params
+	}
+
+	db := openConnection(connectionString)
+	defer utils.DBClose(db)
+
+	generateWithoutSchema(db, dbConn.DBName, destDir, generatorTemplate...)
+
+	return nil
+}
+
+func generateWithoutSchema(db *sql.DB, dbName, destDir string, templates ...template.Template) {
+	fmt.Println("Retrieving database information...")
+	// No schemas in MySQL
+	schemaMetaData := metadata.GetSchema(db, &mySqlQuerySet{}, dbName)
+
+	schemaMetaData.Name = ""
+	genTemplate := template.Default(mysql.Dialect)
+	if len(templates) > 0 {
+		genTemplate = templates[0]
+	}
+
+	template.ProcessSchema(destDir, schemaMetaData, genTemplate)
+}
+
 // Generate generates jet files at destination dir from database connection details
 func Generate(destDir string, dbConn DBConnection, generatorTemplate ...template.Template) (err error) {
 	defer utils.ErrorCatch(&err)

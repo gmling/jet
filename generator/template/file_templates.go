@@ -50,9 +50,14 @@ func (a {{tableTemplate.TypeName}}) AS(alias string) *{{tableTemplate.TypeName}}
 	return new{{tableTemplate.TypeName}}(a.SchemaName(), a.TableName(), alias)
 }
 
-// Schema creates new {{tableTemplate.TypeName}} with assigned schema name
+// FromSchema creates new {{tableTemplate.TypeName}} with assigned schema name
 func (a {{tableTemplate.TypeName}}) FromSchema(schemaName string) *{{tableTemplate.TypeName}} {
 	return new{{tableTemplate.TypeName}}(schemaName, a.TableName(), a.Alias())
+}
+
+// FromTable creates new {{tableTemplate.TypeName}} with assigned table name
+func (a {{tableTemplate.TypeName}}) FromTable(tableName string) {{tableTemplate.TypeName}} {
+	return new{{tableTemplate.TypeName}}(a.SchemaName(), tableName, a.TableName())
 }
 
 // WithPrefix creates new {{tableTemplate.TypeName}} with assigned table prefix
